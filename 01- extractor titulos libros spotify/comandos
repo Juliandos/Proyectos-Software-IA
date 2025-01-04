@@ -1,3 +1,4 @@
 pip install spotipy
 pip freeze > requirements.txt - cada vez que se instale una libreria
+pip install -r requirements.txt - para instalar todas las librerias que se instalarón previamente, retomar en otra Pc
 pip install python-dotenv
