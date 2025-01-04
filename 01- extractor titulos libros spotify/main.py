@@ -2,6 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from dotenv import load_dotenv
 import os
+import sqlite3
 
 # clase para representar las caracteristicas de los episodios
 class Episodio:
@@ -75,6 +76,19 @@ def extraer_episodios(potcast_id, sp):
 
     return episodios
 
+def conectar_db(archivo_db):
+    """
+    Conecta a la base de datos SQLite.
+    
+    :param archivo_db: Nombre del archivo de la base de datos SQLite.
+    
+    :return: Objeto de la base de datos SQLite.
+    """
+    try:
+        conn = sqlite3.connect(archivo_db)
+        return conn
+    except sqlite3.Error as error:
+        return None
 
 def main():
     client_id, client_secret = obtener_claves_secretas()
