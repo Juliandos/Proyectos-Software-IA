@@ -6,7 +6,7 @@ import sqlite3
 
 # clase para representar las caracteristicas de los episodios
 class Episodio:
-    def __init__(self, id, nombre, fecha, duracion, descripcion):
+    def __init__(self, book_id, name, release_date, duration_ms, description):
         """
         Representa un episodio de un podcast.
 
@@ -16,11 +16,11 @@ class Episodio:
         :param duracion: Duración del episodio en minutos.
         :param descripcion: Descripción del episodio.
         """
-        self.id = id
-        self.nombre = nombre
-        self.fecha = fecha
-        self.duracion = duracion
-        self.descripcion = descripcion
+        self.book_id = book_id
+        self.name = name
+        self.release_date = release_date
+        self.duration = duration_ms
+        self.description = description
 
     def __str__(self):
         """
@@ -51,13 +51,6 @@ def iniciar_sesion_spotify(client_id, client_secret):
     sp = spotipy.Spotify(auth_manager=auth_manager)
 
     return sp
-
-# Ejemplo: Buscar una canción
-
-# result = sp.search(q='canserbero', type='track', limit=5)
-# for idx, track in enumerate(result['tracks']['items']):
-#     print(f"{idx + 1}. {track['name']} - {track['artists'][0]['name']}")
-
 
 # Dame el listado de episodios del potcast con ID 0hurw4EWdMieYjHA6aBmwg:
 def extraer_episodios(potcast_id, sp):
@@ -90,13 +83,44 @@ def conectar_db(archivo_db):
     except sqlite3.Error as error:
         return None
 
+def almacenar_episodio(conn, episodio: Episodio):
+    """
+    Almacena un episodio en la base de datos SQLite.
+    
+    :param conn: Objeto de la base de datos SQLite.
+    :param episodio: Objeto Episodio con la información del episodio.
+    """
+    sql = """
+        INSERT INTO episodio (id, nombre, fecha, duracion, descripcion)
+        VALUES (?,?,?,?,?)
+    """
+    try:
+        cur = conn.cursor()
+        cur.execute(sql,
+        (episodio.book_id, episodio.name, episodio.release_date, episodio.duration, episodio.description))
+        conn.commit()
+    except sqlite3.Error as error:
+        print("Error al almacenar el episodio:", error)
+
 def main():
     client_id, client_secret = obtener_claves_secretas()
     sp = iniciar_sesion_spotify(client_id, client_secret)
     
     episodios = extraer_episodios('0hurw4EWdMieYjHA6aBmwg', sp)
 
-    for episodio in episodios:
-        print(episodio)
+    if len(episodios):
+        conexion = conectar_db('Db_extraer_libros_spotify.db')
+        for episodio in episodios:
+            almacenar_episodio(client_id, episodio)
+        conexion.close()
+    else:
+        print("No se pudieron extraer episodios del podcast")
+
 
 main()
+
+# Ejemplo: Buscar una canción
+
+# result = sp.search(q='canserbero', type='track', limit=5)
+# for idx, track in enumerate(result['tracks']['items']):
+#     print(f"{idx + 1}. {track['name']} - {track['artists'][0]['name']}")
