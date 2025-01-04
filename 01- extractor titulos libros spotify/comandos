@@ -1,2 +1,3 @@
 pip install spotipy
 pip freeze > requirements.txt - cada vez que se instale una libreria
+pip install python-dotenv
