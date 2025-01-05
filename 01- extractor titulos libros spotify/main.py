@@ -19,7 +19,7 @@ class Episodio:
         self.book_id = book_id
         self.name = name
         self.release_date = release_date
-        self.duration = duration_ms
+        self.duration_ms = duration_ms
         self.description = description
 
     def __str__(self):
@@ -27,11 +27,11 @@ class Episodio:
         Retorna una representación legible del episodio.
         """
         return (
-            f"Id: {self.id}\n"
-            f"Episodio: {self.nombre}\n"
-            f"Fecha: {self.fecha}\n"
-            f"Duración: {self.duracion} minutos\n"
-            f"Descripción: {self.descripcion}\n"
+            f"Id: {self.book_id}\n"
+            f"Episodio: {self.name}\n"
+            f"Fecha: {self.release_date}\n"
+            f"Duración: {self.duration_ms} minutos\n"
+            f"Descripción: {self.description}\n"
             "-------------------------------------------------------------------------"
         )
 
@@ -59,11 +59,11 @@ def extraer_episodios(potcast_id, sp):
     episodios = []
     for episode in episodes['items']:
         episodio = Episodio(
-            id=episode['id'],
-            nombre=episode['name'],
-            fecha=episode['release_date'],
-            duracion=episode['duration_ms'] // 60000,
-            descripcion=episode['description']
+            book_id=episode['id'],
+            name=episode['name'],
+            release_date=episode['release_date'],
+            duration_ms=episode['duration_ms'] // 60000,
+            description=episode['description']
         )
         episodios.append(episodio)
 
@@ -91,13 +91,13 @@ def almacenar_episodio(conn, episodio: Episodio):
     :param episodio: Objeto Episodio con la información del episodio.
     """
     sql = """
-        INSERT INTO episodio (id, nombre, fecha, duracion, descripcion)
+        INSERT INTO episodio (book_id, name, release_date, duration_ms, description)
         VALUES (?,?,?,?,?)
     """
     try:
         cur = conn.cursor()
         cur.execute(sql,
-        (episodio.book_id, episodio.name, episodio.release_date, episodio.duration, episodio.description))
+        (episodio.book_id, episodio.name, episodio.release_date, episodio.duration_ms, episodio.description))
         conn.commit()
     except sqlite3.Error as error:
         print("Error al almacenar el episodio:", error)
@@ -111,7 +111,7 @@ def main():
     if len(episodios):
         conexion = conectar_db('Db_extraer_libros_spotify.db')
         for episodio in episodios:
-            almacenar_episodio(client_id, episodio)
+            almacenar_episodio(conexion, episodio)
         conexion.close()
     else:
         print("No se pudieron extraer episodios del podcast")
