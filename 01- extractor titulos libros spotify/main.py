@@ -3,6 +3,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from dotenv import load_dotenv
 import os
 import sqlite3
+import argparse
 
 # clase para representar las caracteristicas de los episodios
 class Episodio:
@@ -66,7 +67,7 @@ def extraer_episodios(potcast_id, sp):
             description=episode['description']
         )
         episodios.append(episodio)
-
+    # print(episodios)
     return episodios
 
 def conectar_db(archivo_db):
@@ -103,21 +104,62 @@ def almacenar_episodio(conn, episodio: Episodio):
         print("Error al almacenar el episodio:", error)
 
 def main():
+
+    # Crear el objeto ArgumentParser
+    parser = argparse.ArgumentParser(
+        description="Script para manejar búsqueda, ID del potcast y archivo de base de datos."
+    )
+
+    # # Agregar los argumentos
+    # parser.add_argument(
+    #     "-k", "--clave", 
+    #     type=str, 
+    #     required=True, 
+    #     help="Clave de búsqueda (término a buscar)."
+    # )
+    parser.add_argument(
+        "-i", "--id_potcast", 
+        type=str, 
+        required=True, 
+        help="ID del potcast."
+    )
+    parser.add_argument(
+        "-d", "--database", 
+        type=str, 
+        required=True, 
+        help="Nombre del archivo de la base de datos."
+    )
+
+    # Parsear los argumentos
+    args = parser.parse_args()
+
+    # clave_busqueda = args.clave_busqueda
+    id_potcast = args.id_potcast
+    nombre_archivo_db = args.database
+
+    # Imprimir los valores
+    # print(f"Clave de búsqueda: {args.clave}")
+    print(f"ID del episodio: {args.id_potcast}")
+    print(f"Nombre del archivo de base de datos: {args.database}")
+
     client_id, client_secret = obtener_claves_secretas()
     sp = iniciar_sesion_spotify(client_id, client_secret)
     
-    episodios = extraer_episodios('0hurw4EWdMieYjHA6aBmwg', sp)
+    episodios = extraer_episodios(id_potcast, sp)
+    print("Episodios extraidos: ", episodios )
 
     if len(episodios):
-        conexion = conectar_db('Db_extraer_libros_spotify.db')
+        conexion = conectar_db(nombre_archivo_db)
         for episodio in episodios:
+            print(episodio)
             almacenar_episodio(conexion, episodio)
+
         conexion.close()
     else:
         print("No se pudieron extraer episodios del podcast")
 
-
-main()
+if __name__ == '__main__':
+    main()
 
 # Ejemplo: Buscar una canción
 
