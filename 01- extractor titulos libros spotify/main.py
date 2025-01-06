@@ -103,20 +103,48 @@ def almacenar_episodio(conn, episodio: Episodio):
     except sqlite3.Error as error:
         print("Error al almacenar el episodio:", error)
 
+def verificar_tabla_existe(conn, nombre_tabla):
+    # Conectar a la base de datos
+    cursor = conn.cursor()
+
+    # Consulta para verificar si la tabla existe
+    cursor.execute("""SELECT count(name) FROM sqlite_master WHERE type='table' AND name=?;""", (nombre_tabla,))
+
+    # Obtener el resultado
+    existe = cursor.fetchone()
+
+    # Retornar True si existe, False de lo contrario
+    return existe[0] == 1
+
+def crear_tabla_episodio(conn):
+    """
+    Crea la tabla episodio en la base de datos SQLite.
+    
+    :param conn: Objeto de la base de datos SQLite.
+    """
+    sql = """
+        CREATE TABLE episodio (
+            book_id TEXT PRIMARY KEY NOT NULL,
+            name TEXT NOT NULL,
+            release_date TEXT NOT NULL,
+            duration_ms INTEGER NOT NULL,
+            description TEXT NOT NULL
+        );
+    """
+    try:
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        conn.commit()
+    except sqlite3.Error as error:
+        print("Error al crear la tabla episodio:", error)
+
+
 def main():
 
     # Crear el objeto ArgumentParser
     parser = argparse.ArgumentParser(
         description="Script para manejar búsqueda, ID del potcast y archivo de base de datos."
     )
-
-    # # Agregar los argumentos
-    # parser.add_argument(
-    #     "-k", "--clave", 
-    #     type=str, 
-    #     required=True, 
-    #     help="Clave de búsqueda (término a buscar)."
-    # )
     parser.add_argument(
         "-i", "--id_potcast", 
         type=str, 
@@ -137,11 +165,6 @@ def main():
     id_potcast = args.id_potcast
     nombre_archivo_db = args.database
 
-    # Imprimir los valores
-    # print(f"Clave de búsqueda: {args.clave}")
-    print(f"ID del episodio: {args.id_potcast}")
-    print(f"Nombre del archivo de base de datos: {args.database}")
-
     client_id, client_secret = obtener_claves_secretas()
     sp = iniciar_sesion_spotify(client_id, client_secret)
     
@@ -150,6 +173,10 @@ def main():
 
     if len(episodios):
         conexion = conectar_db(nombre_archivo_db)
+
+        if not verificar_tabla_existe(conexion, 'episodio'):
+            crear_tabla_episodio(conexion)
+
         for episodio in episodios:
             print(episodio)
             almacenar_episodio(conexion, episodio)
