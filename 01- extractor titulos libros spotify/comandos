@@ -1,5 +1,0 @@
-pip install spotipy
-pip freeze > requirements.txt - cada vez que se instale una libreria
-pip install -r requirements.txt - para instalar todas las librerias que se instalarón previamente, retomar en otra Pc
-pip install python-dotenv
-python main.py -i "768GVwxeh1o6kD5bD0qJeJ" -d "Db_extraer_libros_spotify.db"
