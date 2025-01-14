@@ -1,0 +1,4 @@
+python -m venv venv
+venv\scripts\activate.bat
+pip install watchdog
+pip freeze > requirements.txt
